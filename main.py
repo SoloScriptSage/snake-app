@@ -7,12 +7,13 @@ from pygame.version import PygameVersion
 pygame.init()
 
 # RGB COLORS
-frame_color = (0,0,0)
+frame_color = (45,10,35)
+light_frame_color = (65, 55, 60)
 black = (0,0,0)
 white = (255,255,255)
 grey = (128,128,128)
-snake_color = (127, 255, 212)
-head_color = (255,0,0)
+snake_color = (100, 160, 50)
+head_color = (120,200,50)
 button_color = (0, 128, 0)
 button_hover_color = (0, 255, 0)
 
@@ -30,6 +31,20 @@ font = pygame.font.Font(None, 74)
 game_over_text = font.render('Game Over!', True, white)
 restart_text = font.render('Press Enter to Restart', True, white)
 start_text = font.render('Start Game', True, black)
+
+# Logo image to the right
+logo_img = pygame.image.load('logo.png')
+logo_h = 200
+logo_w = 200
+logo_resized = pygame.transform.scale(logo_img, (logo_w, logo_h))
+
+# Play button
+play_button_font = pygame.font.SysFont('Corbel', 35)
+play_button_label = play_button_font.render('Play', True, white)
+
+# Score generation
+my_score_font = pygame.font.SysFont("monospace", 25)
+score = 0
 
 class SnakeBlock:
     def __init__(self, x, y):
@@ -73,6 +88,7 @@ snake_blocks = [
     SnakeBlock(9,10)
 ]
 
+# Moves
 d_row = 0
 d_col = 1
 
@@ -84,10 +100,12 @@ running = True
 game_over = False
 
 while running:
+    mouse = pygame.mouse.get_pos()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYDOWN:
+            print('pygame.KEYDOWN')
             if not game_over:  # Only check for directional input when the game is running
                 if event.key == pygame.K_UP and d_col != 0:
                     d_row = -1
@@ -106,8 +124,9 @@ while running:
                 snake_blocks = [
                     SnakeBlock(9, 8),
                     SnakeBlock(9, 9),
-                     SnakeBlock(9, 10)
+                    SnakeBlock(9, 10)
                 ]
+                score = 0
                 apple = Apple()
                 d_row = 0
                 d_col = 1
@@ -119,8 +138,15 @@ while running:
         # Draw the board
         for row in range(count_block):
             for col in range(count_block):
-                color = black if (row + col) % 2 == 0 else grey
+                color = frame_color if (row + col) % 2 == 0 else light_frame_color
                 draw_block(color, col, row)
+
+        # Draw the logo
+        screen.blit(logo_resized, (750, 20))
+
+        # Draw the score
+        score_label = my_score_font.render(f"Score: {score}", 1, white)
+        screen.blit(score_label, (750, 250))
 
         # Draw the apple
         apple.draw()
@@ -137,12 +163,12 @@ while running:
         new_x = snake_head.x + d_col
         new_y = snake_head.y + d_row
 
-        # Wrap-around logic
+        # Wrap-around `log`ic for x
         if new_x < 0:
             new_x = count_block - 1
         elif new_x >= count_block:
             new_x = 0
-
+        # Wrap-around logic for y
         if new_y < 0:
             new_y = count_block - 1
         elif new_y >= count_block:
@@ -154,7 +180,9 @@ while running:
             game_over=True
         else:
             if new_snake_head.x == apple.x and new_snake_head.y == apple.y:
-                apple=Apple()
+                score += 10
+
+                apple = Apple()
             else:
                 snake_blocks.pop(0)
 
